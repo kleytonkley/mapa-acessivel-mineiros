@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Acessível Mineiros - Goiás</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; }
+    #map { height: 100vh; }
+    .sidebar {
+      position: absolute; top: 10px; left: 10px; width: 320px; background: white;
+      padding: 15px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.2); z-index: 1000;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .filter-btn { margin: 5px; padding: 8px 12px; background: #0077cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>🗺️ Mapa Acessível Mineiros - GO</h2>
+    <p><strong>Projeto de Diversidade e Inclusão</strong><br>
+    Este mapa foi criado para promover a inclusão de pessoas com deficiência de mobilidade em Mineiros (Goiás). 
+    Acessibilidade é direito garantido pela Lei Brasileira de Inclusão (nº 13.146/2015).</p>
+    
+    <h3>Filtros:</h3>
+    <button class="filter-btn" onclick="toggleLayer('rampa')">Rampa</button>
+    <button class="filter-btn" onclick="toggleLayer('elevador')">Elevador</button>
+    <button class="filter-btn" onclick="toggleLayer('banheiro')">Banheiro Acessível</button>
+    <button class="filter-btn" onclick="showAll()">Todos</button>
+    
+    <p><small>Adicione mais pontos da cidade editando o código abaixo. 
+    Para pegar coordenadas: abra Google Maps, clique direito no local e copie "Coordenadas".</small></p>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    const map = L.map('map').setView([-17.5689, -52.5508], 13); // Centro de Mineiros - GO
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap - Projeto Diversidade e Inclusão'
+    }).addTo(map);
+
+    let layers = {};
+    function addMarker(lat, lon, nome, descricao, tipo) {
+      const marker = L.marker([lat, lon]).bindPopup(`<b>${nome}</b><br>${descricao}<br><small>Verifique no local ou adicione foto</small>`);
+      layers[tipo] = layers[tipo] || L.layerGroup().addTo(map);
+      layers[tipo].addLayer(marker);
+    }
+
+    // Pontos reais de Mineiros
+    addMarker(-17.5454, -52.5428, "Ipê Shopping", "Principal shopping da cidade<br>Rampa + Elevador (verificar)", "rampa");
+    addMarker(-17.5577, -52.5561, "Praça José Pereira dos Santos", "Praça central<br>Acesso com rampa e espaço amplo", "rampa");
+    addMarker(-17.57, -52.55, "Hospital São Lucas", "Hospital referência<br>Banheiros adaptados + rampa", "banheiro");
+    addMarker(-17.56, -52.54, "Rodoviária de Mineiros", "Terminal rodoviário<br>Acesso facilitado", "rampa");
+    addMarker(-17.565, -52.55, "Food Park Mineiros", "Área de lazer<br>Verificar acessibilidade", "rampa");
+
+    // Adicione mais aqui (exemplo):
+    // addMarker(-17.56, -52.53, "Nome do lugar", "Descrição completa", "elevador");
+
+    function toggleLayer(tipo) {
+      if (map.hasLayer(layers[tipo])) map.removeLayer(layers[tipo]);
+      else map.addLayer(layers[tipo]);
+    }
+    function showAll() {
+      Object.values(layers).forEach(layer => map.addLayer(layer));
+    }
+  </script>
+</body>
+</html>
