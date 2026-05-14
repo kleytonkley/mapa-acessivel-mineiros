@@ -1,600 +1,499 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AcessivelMaps — Mineiros GO</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg:      #0d1117;
-      --surface: #161b22;
-      --border:  #30363d;
-      --accent:  #2f81f7;
-      --green:   #3fb950;
-      --yellow:  #d29922;
-      --red:     #f85149;
-      --text:    #e6edf3;
-      --muted:   #8b949e;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcessívelMaps — Mineiros GO</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1117;--surface:#161b22;--border:#30363d;
+  --accent:#2f81f7;--green:#3fb950;--yellow:#d29922;--red:#f85149;
+  --text:#e6edf3;--muted:#8b949e;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth;}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:9000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:60px;
+  background:rgba(13,17,23,0.88);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.nav-logo-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.3px;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.15s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:background 0.15s;}
+.nav-cta:hover{background:#388bfd;}
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:100px 24px 60px;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(47,129,247,0.12) 0%,transparent 70%);
+}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.3);color:var(--accent);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:28px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,72px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:20px;}
+.hero h1 span{color:var(--accent);}
+.hero p{font-size:18px;color:var(--muted);max-width:520px;line-height:1.7;margin-bottom:36px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:background 0.15s;}
+.btn-primary:hover{background:#388bfd;}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border);padding:13px 28px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all 0.15s;}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.hero-stats{display:flex;gap:48px;margin-top:60px;flex-wrap:wrap;justify-content:center;}
+.stat{text-align:center;}
+.stat-num{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--accent);}
+.stat-label{font-size:13px;color:var(--muted);margin-top:2px;}
 
-    #map {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-    }
+/* SEÇÕES */
+section{padding:100px 24px;}
+.container{max-width:1100px;margin:0 auto;}
+.section-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1px;margin-bottom:16px;}
+.section-desc{font-size:16px;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:56px;}
 
-    .leaflet-tile {
-      filter: brightness(0.65) saturate(0.7) hue-rotate(180deg) invert(1);
-    }
+/* SOBRE */
+#sobre{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.sobre-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+@media(max-width:768px){.sobre-grid{grid-template-columns:1fr;}}
+.features{display:flex;flex-direction:column;gap:24px;}
+.feature{display:flex;gap:16px;align-items:flex-start;}
+.feature-icon{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.feature-icon.green{background:rgba(63,185,80,0.15);}
+.feature-icon.blue{background:rgba(47,129,247,0.15);}
+.feature-icon.yellow{background:rgba(210,153,34,0.15);}
+.feature-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+.feature-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.sobre-visual{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px;}
+.point-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.point-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.point-name{font-size:14px;font-weight:600;}
+.point-status{font-size:11px;margin-top:2px;}
 
-    /* ── Sidebar ── */
-    .sidebar {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      width: 300px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      z-index: 1000;
-      max-height: calc(100vh - 32px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-      transition: transform 0.3s ease, opacity 0.3s ease; /* NOVO */
-    }
+/* MAPA */
+#mapa{padding:0;}
+.map-header{padding:80px 24px 0;text-align:center;background:var(--bg);}
+.map-header .section-desc{margin:0 auto 40px;}
+#map{height:580px;width:100%;z-index:0;}
+.leaflet-tile{filter:brightness(0.65) saturate(0.7) hue-rotate(180deg) invert(1);}
+.leaflet-popup-content-wrapper{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 24px rgba(0,0,0,0.5)!important;padding:0!important;}
+.leaflet-popup-content{margin:0!important;width:auto!important;}
+.leaflet-popup-tip{background:var(--surface)!important;}
+.leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;top:8px!important;right:10px!important;}
+.map-wrapper{position:relative;}
 
-    .sidebar::-webkit-scrollbar { width: 4px; }
-    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* SIDEBAR DO MAPA */
+.map-sidebar{
+  position:absolute;top:16px;left:16px;width:280px;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  z-index:1000;max-height:calc(100% - 32px);overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.map-sidebar-header{padding:16px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#1a2332 0%,#161b22 100%);border-radius:14px 14px 0 0;}
+.ms-logo-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ms-logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.ms-logo-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+.ms-logo-sub{font-size:10px;color:var(--muted);}
+.ms-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.ms-section{padding:12px 18px;border-bottom:1px solid var(--border);}
+.ms-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.ms-filters{display:flex;flex-wrap:wrap;gap:5px;}
+.ms-filter-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.ms-filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ms-filter-btn.ativo{background:rgba(47,129,247,0.15);border-color:var(--accent);color:var(--accent);}
+.ms-filter-btn.inativo{opacity:0.4;}
+.ms-filter-btn.todos{background:rgba(255,255,255,0.05);border-color:var(--border);color:var(--text);}
+#ms-contador{font-size:11px;color:var(--muted);padding:8px 18px;border-bottom:1px solid var(--border);}
+.ms-legenda{display:flex;flex-direction:column;gap:6px;}
+.ms-legenda-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);}
+.ms-legenda-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.3);}
+#ms-btn-localizar{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 36px);margin:12px 18px 0;padding:9px;background:transparent;color:var(--accent);border:1px solid rgba(47,129,247,0.4);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;}
+#ms-btn-localizar:hover{background:rgba(47,129,247,0.1);}
+#ms-btn-reportar{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 36px);margin:8px 18px 14px;padding:9px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;box-shadow:0 4px 14px rgba(47,129,247,0.3);}
+#ms-btn-reportar:hover{background:#388bfd;}
+#ms-btn-reportar.ativo{background:var(--red);box-shadow:0 4px 14px rgba(248,81,73,0.3);}
+#ms-painel-form{display:none;padding:12px 18px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2);}
+#ms-painel-form h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text);}
+#ms-aviso-clique{font-size:11px;color:var(--yellow);margin-bottom:10px;padding:7px 9px;background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.3);border-radius:7px;font-weight:600;}
+#ms-aviso-clique.marcado{color:var(--green);background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.3);}
+#ms-painel-form label{display:block;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-top:8px;margin-bottom:3px;}
+.ms-erro{font-size:10px;color:var(--red);margin-top:2px;display:none;}
+#ms-painel-form input,#ms-painel-form select,#ms-painel-form textarea{width:100%;padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;transition:border-color 0.15s;}
+#ms-painel-form input:focus,#ms-painel-form select:focus,#ms-painel-form textarea:focus{border-color:var(--accent);}
+#ms-painel-form input.invalido,#ms-painel-form textarea.invalido{border-color:var(--red)!important;}
+#ms-painel-form select option{background:var(--surface);}
+#ms-painel-form textarea{resize:vertical;height:60px;}
+#ms-btn-confirmar{margin-top:10px;width:100%;padding:9px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;}
+#ms-btn-confirmar:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+#ms-btn-cancelar{margin-top:5px;width:100%;padding:7px;background:transparent;color:var(--red);border:1px solid rgba(248,81,73,0.4);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;transition:all 0.15s;}
+#ms-btn-cancelar:hover{background:rgba(248,81,73,0.1);}
 
-    /* NOVO — mobile: sidebar ocupa a tela toda e começa escondida */
-    @media (max-width: 600px) {
-      .sidebar {
-        top: 0;
-        left: 0;
-        width: 100%;
-        max-height: 85vh;
-        border-radius: 0 0 18px 18px;
-        transform: translateY(-110%);
-        opacity: 0;
-        pointer-events: none;
-      }
+/* CONTRIBUIR */
+#contribuir{background:var(--surface);border-top:1px solid var(--border);}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;}
+.step{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px 24px;}
+.step-num{width:36px;height:36px;border-radius:50%;background:rgba(47,129,247,0.15);border:1px solid rgba(47,129,247,0.3);color:var(--accent);font-family:'Syne',sans-serif;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.step-title{font-size:15px;font-weight:600;margin-bottom:8px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6;}
 
-      .sidebar.aberta {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: all;
-      }
-    }
+/* FOOTER */
+footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-logo{display:flex;align-items:center;gap:8px;}
+.footer-logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.footer-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+.footer-text{font-size:12px;color:var(--muted);}
+.lei-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.3);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--accent);font-weight:600;}
 
-    /* NOVO — botão flutuante mobile */
-    #btn-menu-mobile {
-      display: none;
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1100;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 30px;
-      padding: 13px 24px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(47,129,247,0.5);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    @media (min-width: 601px) {
-      #btn-menu-mobile { display: none !important; }
-    }
-
-    @media (max-width: 600px) {
-      #btn-menu-mobile { display: flex; }
-    }
-
-    /* ── Conteúdo da sidebar (igual antes) ── */
-    .sidebar-header {
-      padding: 20px 20px 16px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, #1a2332 0%, #161b22 100%);
-      border-radius: 14px 14px 0 0;
-    }
-
-    /* NOVO — botão fechar no mobile */
-    .btn-fechar-mobile {
-      display: none;
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    @media (max-width: 600px) {
-      .sidebar-header { border-radius: 0; position: relative; padding-right: 60px; }
-      .btn-fechar-mobile { display: block; }
-    }
-
-    .logo-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .logo-icon {
-      width: 38px; height: 38px;
-      background: var(--accent);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 0 16px rgba(47,129,247,0.4);
-      flex-shrink: 0;
-    }
-
-    .logo-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-      line-height: 1.1;
-    }
-
-    .logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-    .header-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-    .lei-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 8px;
-      background: rgba(47,129,247,0.1);
-      border: 1px solid rgba(47,129,247,0.3);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 11px;
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .sidebar-section {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .filters-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-
-    .filter-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 12px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-btn.ativo { background: rgba(47,129,247,0.15); border-color: var(--accent); color: var(--accent); }
-    .filter-btn.inativo { opacity: 0.4; }
-    .filter-btn.todos { background: rgba(255,255,255,0.05); border-color: var(--border); color: var(--text); }
-
-    #contador {
-      font-size: 12px;
-      color: var(--muted);
-      padding: 10px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .legenda { display: flex; flex-direction: column; gap: 7px; }
-
-    .legenda-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-
-    .legenda-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      border: 1.5px solid rgba(255,255,255,0.3);
-    }
-
-    #btn-reportar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      width: calc(100% - 40px);
-      margin: 16px 20px;
-      padding: 11px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 9px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.15s;
-      box-shadow: 0 4px 14px rgba(47,129,247,0.3);
-    }
-
-    #btn-reportar:hover { background: #388bfd; }
-    #btn-reportar.ativo { background: var(--red); box-shadow: 0 4px 14px rgba(248,81,73,0.3); }
-
-    #painel-form {
-      display: none;
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      background: rgba(0,0,0,0.2);
-    }
-
-    #painel-form h4 {
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: var(--text);
-    }
-
-    #aviso-clique {
-      font-size: 12px;
-      color: var(--yellow);
-      margin-bottom: 12px;
-      padding: 8px 10px;
-      background: rgba(210,153,34,0.1);
-      border: 1px solid rgba(210,153,34,0.3);
-      border-radius: 7px;
-      font-weight: 600;
-    }
-
-    #aviso-clique.marcado {
-      color: var(--green);
-      background: rgba(63,185,80,0.1);
-      border-color: rgba(63,185,80,0.3);
-    }
-
-    #painel-form label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-top: 10px;
-      margin-bottom: 4px;
-    }
-
-    #painel-form input,
-    #painel-form select,
-    #painel-form textarea {
-      width: 100%;
-      padding: 8px 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    #painel-form input:focus,
-    #painel-form select:focus,
-    #painel-form textarea:focus { border-color: var(--accent); }
-
-    #painel-form select option { background: var(--surface); }
-    #painel-form textarea { resize: vertical; height: 70px; }
-
-    #btn-confirmar {
-      margin-top: 12px; width: 100%; padding: 10px;
-      background: var(--green); color: white; border: none;
-      border-radius: 8px; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 600; transition: all 0.15s;
-    }
-
-    #btn-confirmar:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-
-    #btn-cancelar {
-      margin-top: 6px; width: 100%; padding: 8px;
-      background: transparent; color: var(--red);
-      border: 1px solid rgba(248,81,73,0.4);
-      border-radius: 8px; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; transition: all 0.15s;
-    }
-
-    #btn-cancelar:hover { background: rgba(248,81,73,0.1); }
-  </style>
+/* TOAST */
+#toast{display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green);color:var(--text);padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.5);white-space:nowrap;}
+</style>
 </head>
 <body>
-  <div id="map"></div>
 
-  <!-- NOVO — botão flutuante que aparece só no mobile -->
-  <button id="btn-menu-mobile" onclick="toggleSidebar()">
-    <span id="icone-menu">☰</span>
-    <span id="texto-menu">Ver painel</span>
-  </button>
+<div id="toast"></div>
 
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <!-- NOVO — botão fechar só no mobile -->
-      <button class="btn-fechar-mobile" onclick="toggleSidebar()">✕ Fechar</button>
-      <div class="logo-row">
-        <div class="logo-icon">♿</div>
-        <div>
-          <div class="logo-title">AcessívelMaps</div>
-          <div class="logo-sub">Mineiros — Goiás</div>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">♿</div>
+    <span class="nav-logo-text">AcessívelMaps</span>
+  </div>
+  <div class="nav-links">
+    <a href="#sobre">Sobre</a>
+    <a href="#mapa">Mapa</a>
+    <a href="#contribuir">Contribuir</a>
+  </div>
+  <a href="#mapa" class="nav-cta">Ver mapa</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">♿ Mineiros — Goiás</div>
+  <h1>Mobilidade para <span>todos</span>,<br>mapeada por todos</h1>
+  <p>Mapa colaborativo de acessibilidade urbana para pessoas com deficiência de mobilidade em Mineiros, GO.</p>
+  <div class="hero-btns">
+    <a href="#mapa" class="btn-primary">Explorar o mapa</a>
+    <a href="#contribuir" class="btn-secondary">Como contribuir</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Locais mapeados</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-label">Tipos de recurso</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Gratuito e aberto</div></div>
+  </div>
+</section>
+
+<!-- SOBRE -->
+<section id="sobre">
+  <div class="container">
+    <div class="sobre-grid">
+      <div>
+        <span class="section-tag">Sobre o projeto</span>
+        <h2 class="section-title">Por que esse mapa existe?</h2>
+        <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:32px;">Pessoas com deficiência de mobilidade enfrentam barreiras diárias para se locomover pela cidade. Este projeto mapeia rampas, elevadores e banheiros adaptados em Mineiros para facilitar o planejamento de rotas acessíveis.</p>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon green">✅</div>
+            <div>
+              <div class="feature-title">Informação verificada</div>
+              <div class="feature-desc">Dados inseridos pela comunidade local, com status de acessibilidade em tempo real.</div>
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon blue">🗺️</div>
+            <div>
+              <div class="feature-title">Mapa interativo</div>
+              <div class="feature-desc">Filtre por tipo de recurso e encontre o que precisa com poucos cliques.</div>
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon yellow">⚖️</div>
+            <div>
+              <div class="feature-title">Baseado na lei</div>
+              <div class="feature-desc">Alinhado à Lei Brasileira de Inclusão (nº 13.146/2015).</div>
+            </div>
+          </div>
         </div>
       </div>
-      <p class="header-desc">
-        Mapa colaborativo de acessibilidade urbana para pessoas com deficiência de mobilidade.
-      </p>
-      <div class="lei-badge">⚖️ Lei nº 13.146/2015 — Lei Brasileira de Inclusão</div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="section-label">Filtrar por recurso</div>
-      <div class="filters-grid">
-        <button class="filter-btn ativo" id="btn-rampa"    onclick="toggleLayer('rampa')">♿ Rampa</button>
-        <button class="filter-btn ativo" id="btn-elevador" onclick="toggleLayer('elevador')">🛗 Elevador</button>
-        <button class="filter-btn ativo" id="btn-banheiro" onclick="toggleLayer('banheiro')">🚻 Banheiro</button>
-        <button class="filter-btn todos"                   onclick="showAll()">🗺️ Todos</button>
-      </div>
-    </div>
-
-    <div id="contador">Carregando pontos...</div>
-
-    <div class="sidebar-section">
-      <div class="section-label">Legenda</div>
-      <div class="legenda">
-        <div class="legenda-item">
-          <div class="legenda-dot" style="background:#16a34a"></div>
-          <span>Acessível</span>
+      <div class="sobre-visual">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Locais em destaque</div>
+        <div class="point-card">
+          <div class="point-dot" style="background:#16a34a"></div>
+          <div><div class="point-name">Unifimes</div><div class="point-status" style="color:#3fb950">Rampa + banheiros adaptados</div></div>
         </div>
-        <div class="legenda-item">
-          <div class="legenda-dot" style="background:#d97706"></div>
-          <span>Acessibilidade parcial ou não verificada</span>
+        <div class="point-card">
+          <div class="point-dot" style="background:#16a34a"></div>
+          <div><div class="point-name">Hospital São Lucas</div><div class="point-status" style="color:#3fb950">Banheiros adaptados + rampa</div></div>
         </div>
-        <div class="legenda-item">
-          <div class="legenda-dot" style="background:#dc2626"></div>
-          <span>Não acessível</span>
+        <div class="point-card">
+          <div class="point-dot" style="background:#16a34a"></div>
+          <div><div class="point-name">UPA Mineiros</div><div class="point-status" style="color:#3fb950">Unidade de Pronto Atendimento</div></div>
+        </div>
+        <div class="point-card">
+          <div class="point-dot" style="background:#d97706"></div>
+          <div><div class="point-name">Prefeitura de Mineiros</div><div class="point-status" style="color:#d29922">Acesso obrigatório por lei — verificar</div></div>
+        </div>
+        <div class="point-card">
+          <div class="point-dot" style="background:#16a34a"></div>
+          <div><div class="point-name">Praça José Pereira dos Santos</div><div class="point-status" style="color:#3fb950">Rampa + espaço amplo</div></div>
         </div>
       </div>
-    </div>
-
-    <button id="btn-reportar" onclick="toggleFormulario()">
-      <span>📍</span> Adicionar Local
-    </button>
-
-    <div id="painel-form">
-      <h4>Novo local</h4>
-      <div id="aviso-clique">🖱️ Clique no mapa para marcar a localização</div>
-
-      <label>Nome do local</label>
-      <input type="text" id="form-nome" placeholder="Ex: Farmácia Central" />
-
-      <label>Tipo</label>
-      <select id="form-tipo">
-        <option value="rampa">♿ Rampa</option>
-        <option value="elevador">🛗 Elevador</option>
-        <option value="banheiro">🚻 Banheiro Acessível</option>
-      </select>
-
-      <label>Status</label>
-      <select id="form-status">
-        <option value="acessivel">✅ Acessível</option>
-        <option value="parcial">⚠️ Parcial</option>
-        <option value="inacessivel">❌ Não acessível</option>
-      </select>
-
-      <label>Descrição</label>
-      <textarea id="form-descricao" placeholder="Descreva as condições de acessibilidade..."></textarea>
-
-      <button id="btn-confirmar" onclick="confirmarLocal()" disabled>✓ Confirmar e Adicionar</button>
-      <button id="btn-cancelar"  onclick="cancelarFormulario()">✕ Cancelar</button>
     </div>
   </div>
+</section>
 
-  <script>
-    const map = L.map('map').setView([-17.5689, -52.5508], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap — Projeto Diversidade e Inclusão'
-    }).addTo(map);
-
-    let layers = {};
-    let layerAtivo = {};
-
-    function criarIcone(status) {
-      const cores = {
-        acessivel:   { bg: "#16a34a", emoji: "♿" },
-        parcial:     { bg: "#d97706", emoji: "⚠️" },
-        inacessivel: { bg: "#dc2626", emoji: "✕"  },
-      };
-      const c = cores[status] || cores["parcial"];
-      return L.divIcon({
-        className: "",
-        html: `<div style="
-          background:${c.bg};
-          width:34px; height:34px;
-          border-radius:50% 50% 50% 0;
-          transform:rotate(-45deg);
-          border:2px solid white;
-          box-shadow:0 2px 8px rgba(0,0,0,0.5);
-          display:flex; align-items:center; justify-content:center;
-        ">
-          <span style="transform:rotate(45deg);font-size:14px">${c.emoji}</span>
-        </div>`,
-        iconSize: [34, 34],
-        iconAnchor: [17, 34],
-        popupAnchor: [0, -36],
-      });
-    }
-
-    function addMarker(lat, lon, nome, descricao, tipo, status = "parcial") {
-      const marker = L.marker([lat, lon], { icon: criarIcone(status) })
-        .bindPopup(`
-          <div style="font-family:'DM Sans',sans-serif;min-width:180px">
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px">${nome}</div>
-            <div style="font-size:12px;color:#555;margin-bottom:6px">${descricao}</div>
-            <div style="font-size:11px;color:#888">Verifique no local antes de visitar</div>
+<!-- MAPA -->
+<section id="mapa" style="padding:0;">
+  <div class="map-header">
+    <span class="section-tag">Mapa interativo</span>
+    <h2 class="section-title">Explore a acessibilidade de Mineiros</h2>
+    <p class="section-desc">Clique em qualquer marcador para ver detalhes. Use os filtros para encontrar o recurso que precisa.</p>
+  </div>
+  <div class="map-wrapper">
+    <div id="map"></div>
+    <div class="map-sidebar">
+      <div class="map-sidebar-header">
+        <div class="ms-logo-row">
+          <div class="ms-logo-icon">♿</div>
+          <div>
+            <div class="ms-logo-title">AcessívelMaps</div>
+            <div class="ms-logo-sub">Mineiros — Goiás</div>
           </div>
-        `);
-      if (!layers[tipo]) {
-        layers[tipo] = L.layerGroup().addTo(map);
-        layerAtivo[tipo] = true;
-      }
-      layers[tipo].addLayer(marker);
-    }
+        </div>
+        <p class="ms-desc">Mapa colaborativo de acessibilidade urbana.</p>
+      </div>
+      <div class="ms-section">
+        <div class="ms-label">Filtrar por recurso</div>
+        <div class="ms-filters">
+          <button class="ms-filter-btn ativo" id="btn-rampa" onclick="toggleLayer('rampa')">♿ Rampa</button>
+          <button class="ms-filter-btn ativo" id="btn-elevador" onclick="toggleLayer('elevador')">🛗 Elevador</button>
+          <button class="ms-filter-btn ativo" id="btn-banheiro" onclick="toggleLayer('banheiro')">🚻 Banheiro</button>
+          <button class="ms-filter-btn todos" onclick="showAll()">🗺️ Todos</button>
+        </div>
+      </div>
+      <div id="ms-contador">Carregando...</div>
+      <div class="ms-section">
+        <div class="ms-label">Legenda</div>
+        <div class="ms-legenda">
+          <div class="ms-legenda-item"><div class="ms-legenda-dot" style="background:#16a34a"></div><span>Acessível</span></div>
+          <div class="ms-legenda-item"><div class="ms-legenda-dot" style="background:#d97706"></div><span>Parcial ou não verificado</span></div>
+          <div class="ms-legenda-item"><div class="ms-legenda-dot" style="background:#dc2626"></div><span>Não acessível</span></div>
+        </div>
+      </div>
+      <button id="ms-btn-localizar" onclick="localizarUsuario()">📍 Minha localização</button>
+      <button id="ms-btn-reportar" onclick="toggleFormulario()"><span>📍</span> Adicionar Local</button>
+      <div id="ms-painel-form">
+        <h4>Novo local</h4>
+        <div id="ms-aviso-clique">🖱️ Clique no mapa para marcar</div>
+        <label>Nome do local</label>
+        <input type="text" id="form-nome" placeholder="Ex: Farmácia Central"/>
+        <div class="ms-erro" id="erro-nome">⚠️ Informe o nome.</div>
+        <label>Tipo</label>
+        <select id="form-tipo">
+          <option value="rampa">♿ Rampa</option>
+          <option value="elevador">🛗 Elevador</option>
+          <option value="banheiro">🚻 Banheiro Acessível</option>
+        </select>
+        <label>Status</label>
+        <select id="form-status">
+          <option value="acessivel">✅ Acessível</option>
+          <option value="parcial">⚠️ Parcial</option>
+          <option value="inacessivel">❌ Não acessível</option>
+        </select>
+        <label>Descrição</label>
+        <textarea id="form-descricao" placeholder="Descreva as condições..."></textarea>
+        <div class="ms-erro" id="erro-descricao">⚠️ Adicione uma descrição.</div>
+        <div class="ms-erro" id="erro-coordenada" style="display:none;margin-top:6px">⚠️ Clique no mapa primeiro.</div>
+        <button id="ms-btn-confirmar" onclick="confirmarLocal()" disabled>✓ Confirmar</button>
+        <button id="ms-btn-cancelar" onclick="cancelarFormulario()">✕ Cancelar</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-    // ── Pontos do mapa ───────────────────────────────────────────────────────
-    addMarker(-17.548937281714373,  -52.5448561772393,   "Ipê Shopping",                  "Rampa + Elevador (verificar)",               "rampa",    "parcial");
-    addMarker(-17.558034848421805,  -52.55650428887499,  "Praça José Pereira dos Santos",  "Acesso com rampa e espaço amplo",            "rampa",    "acessivel");
-    addMarker(-17.566753484302627,  -52.55913800422035,  "Hospital São Lucas",             "Banheiros adaptados + rampa",                "banheiro", "acessivel");
-    addMarker(-17.565956783672746,  -52.56121417352925,  "Rodoviária de Mineiros",         "Acesso facilitado",                          "rampa",    "parcial");
-    addMarker(-17.55911103612563,   -52.55768183305719,  "Food Park Mineiros",             "Verificar acessibilidade",                   "rampa",    "parcial");
-    addMarker(-17.552372702251912,  -52.550883304220804, "Unifimes",                       "Universidade - verificar rampa na entrada",  "rampa",    "parcial");
-    addMarker(-17.570367102277963,  -52.55137891956593,  "Prefeitura de Mineiros",         "Órgão público - acesso obrigatório por lei", "rampa",    "parcial");
-    addMarker(-17.559584280978683,  -52.5455603042207,   "UPA Mineiros",                   "Unidade de Pronto Atendimento",              "banheiro", "acessivel");
-    addMarker(-17.560028321231453,  -52.56483728887501,  "Fórum de Mineiros",              "Órgão público - verificar rampa",            "rampa",    "parcial");
-    // ────────────────────────────────────────────────────────────────────────
+<!-- CONTRIBUIR -->
+<section id="contribuir">
+  <div class="container">
+    <span class="section-tag">Colabore</span>
+    <h2 class="section-title">Como contribuir com o mapa</h2>
+    <p class="section-desc">Qualquer pessoa pode adicionar novos locais e ajudar a tornar Mineiros mais acessível para todos.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Acesse o mapa</div>
+        <div class="step-desc">Role até a seção do mapa interativo acima ou clique em "Ver mapa" no menu.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Clique em "Adicionar Local"</div>
+        <div class="step-desc">Use o botão azul na barra lateral do mapa para entrar no modo de adição.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Marque no mapa</div>
+        <div class="step-desc">Clique no ponto exato do mapa onde fica o local que você quer registrar.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Preencha os dados</div>
+        <div class="step-desc">Informe o nome, tipo de recurso, status de acessibilidade e uma breve descrição.</div>
+      </div>
+    </div>
+    <div style="margin-top:40px;padding:24px;background:rgba(47,129,247,0.08);border:1px solid rgba(47,129,247,0.2);border-radius:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:28px;">⚖️</div>
+      <div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Lei Brasileira de Inclusão — nº 13.146/2015</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">Todo espaço de uso público ou coletivo deve garantir acessibilidade às pessoas com deficiência. Este mapa ajuda a fiscalizar e promover esse direito.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    function atualizarContador() {
-      let total = 0;
-      Object.entries(layers).forEach(([tipo, layer]) => {
-        if (layerAtivo[tipo]) total += layer.getLayers().length;
-      });
-      document.getElementById("contador").textContent = `📍 ${total} ponto(s) visível(is) no mapa`;
-    }
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="footer-logo-icon">♿</div>
+    <span class="footer-logo-text">AcessívelMaps</span>
+  </div>
+  <span class="footer-text">Projeto colaborativo — Mineiros, Goiás</span>
+  <span class="lei-badge">⚖️ Lei nº 13.146/2015</span>
+</footer>
 
-    function toggleLayer(tipo) {
-      const btn = document.getElementById(`btn-${tipo}`);
-      if (layerAtivo[tipo]) {
-        map.removeLayer(layers[tipo]);
-        layerAtivo[tipo] = false;
-        if (btn) { btn.classList.remove("ativo"); btn.classList.add("inativo"); }
-      } else {
-        map.addLayer(layers[tipo]);
-        layerAtivo[tipo] = true;
-        if (btn) { btn.classList.remove("inativo"); btn.classList.add("ativo"); }
-      }
-      atualizarContador();
-    }
+<script>
+const map = L.map('map').setView([-17.5689,-52.5508],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
 
-    function showAll() {
-      Object.keys(layers).forEach(tipo => {
-        map.addLayer(layers[tipo]);
-        layerAtivo[tipo] = true;
-        const btn = document.getElementById(`btn-${tipo}`);
-        if (btn) { btn.classList.remove("inativo"); btn.classList.add("ativo"); }
-      });
-      atualizarContador();
-    }
+let layers={},layerAtivo={};
 
-    // NOVO — abre e fecha a sidebar no mobile
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      const icone   = document.getElementById("icone-menu");
-      const texto   = document.getElementById("texto-menu");
-      const aberta  = sidebar.classList.toggle("aberta");
-      icone.textContent = aberta ? "✕" : "☰";
-      texto.textContent = aberta ? "Fechar painel" : "Ver painel";
-    }
+function criarIcone(status){
+  const cores={acessivel:{bg:"#16a34a",emoji:"♿"},parcial:{bg:"#d97706",emoji:"⚠️"},inacessivel:{bg:"#dc2626",emoji:"✕"}};
+  const c=cores[status]||cores["parcial"];
+  return L.divIcon({className:"",html:`<div style="background:${c.bg};width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px">${c.emoji}</span></div>`,iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-36]});
+}
 
-    let coordenada = null;
-    let modoAdicionar = false;
+function criarPopup(nome,descricao,status){
+  const badges={acessivel:{cor:"#3fb950",label:"✅ Acessível"},parcial:{cor:"#d29922",label:"⚠️ Parcial"},inacessivel:{cor:"#f85149",label:"❌ Não acessível"}};
+  const b=badges[status]||badges["parcial"];
+  return `<div style="padding:14px 16px;min-width:200px"><div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#e6edf3;margin-bottom:6px">${nome}</div><div style="display:inline-block;background:${b.cor}22;border:1px solid ${b.cor}66;color:${b.cor};font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;margin-bottom:8px">${b.label}</div><div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#8b949e;line-height:1.5">${descricao}</div><div style="font-family:'DM Sans',sans-serif;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #30363d">Verifique no local antes de visitar</div></div>`;
+}
 
-    function toggleFormulario() {
-      modoAdicionar = !modoAdicionar;
-      const painel = document.getElementById("painel-form");
-      const btn    = document.getElementById("btn-reportar");
-      if (modoAdicionar) {
-        painel.style.display = "block";
-        btn.innerHTML = "<span>✕</span> Cancelar adição";
-        btn.classList.add("ativo");
-        map.getContainer().style.cursor = "crosshair";
-      } else {
-        cancelarFormulario();
-      }
-    }
+function addMarker(lat,lon,nome,descricao,tipo,status="parcial"){
+  const marker=L.marker([lat,lon],{icon:criarIcone(status)}).bindPopup(criarPopup(nome,descricao,status));
+  if(!layers[tipo]){layers[tipo]=L.layerGroup().addTo(map);layerAtivo[tipo]=true;}
+  layers[tipo].addLayer(marker);
+}
 
-    function cancelarFormulario() {
-      modoAdicionar = false;
-      coordenada = null;
-      document.getElementById("painel-form").style.display = "none";
-      document.getElementById("btn-reportar").innerHTML = "<span>📍</span> Adicionar Local";
-      document.getElementById("btn-reportar").classList.remove("ativo");
-      document.getElementById("form-nome").value = "";
-      document.getElementById("form-descricao").value = "";
-      document.getElementById("btn-confirmar").disabled = true;
-      const aviso = document.getElementById("aviso-clique");
-      aviso.textContent = "🖱️ Clique no mapa para marcar a localização";
-      aviso.className = "";
-      map.getContainer().style.cursor = "";
-    }
+addMarker(-17.548937281714373,-52.5448561772393,"Ipê Shopping","Rampa + Elevador (verificar)","rampa","parcial");
+addMarker(-17.558034848421805,-52.55650428887499,"Praça José Pereira dos Santos","Acesso com rampa e espaço amplo","rampa","acessivel");
+addMarker(-17.566753484302627,-52.55913800422035,"Hospital São Lucas","Banheiros adaptados + rampa","banheiro","acessivel");
+addMarker(-17.565956783672746,-52.56121417352925,"Rodoviária de Mineiros","Acesso facilitado","rampa","parcial");
+addMarker(-17.55911103612563,-52.55768183305719,"Food Park Mineiros","Verificar acessibilidade","rampa","parcial");
+addMarker(-17.552372702251912,-52.550883304220804,"Unifimes","Universidade - rampa na entrada + banheiros adaptados para pessoas com deficiência","rampa","acessivel");
+addMarker(-17.570367102277963,-52.55137891956593,"Prefeitura de Mineiros","Órgão público - acesso obrigatório por lei","rampa","parcial");
+addMarker(-17.559584280978683,-52.5455603042207,"UPA Mineiros","Unidade de Pronto Atendimento","banheiro","acessivel");
+addMarker(-17.560028321231453,-52.56483728887501,"Fórum de Mineiros","Órgão público - verificar rampa","rampa","parcial");
 
-    map.on("click", function(e) {
-      if (!modoAdicionar) return;
-      coordenada = e.latlng;
-      const aviso = document.getElementById("aviso-clique");
-      aviso.textContent = `✅ Marcado: ${coordenada.lat.toFixed(4)}, ${coordenada.lng.toFixed(4)}`;
-      aviso.className = "marcado";
-      document.getElementById("btn-confirmar").disabled = false;
-    });
+function atualizarContador(){
+  let total=0;
+  Object.entries(layers).forEach(([tipo,layer])=>{if(layerAtivo[tipo])total+=layer.getLayers().length;});
+  document.getElementById("ms-contador").textContent=`📍 ${total} ponto(s) visível(is)`;
+}
 
-    function confirmarLocal() {
-      const nome      = document.getElementById("form-nome").value.trim();
-      const tipo      = document.getElementById("form-tipo").value;
-      const status    = document.getElementById("form-status").value;
-      const descricao = document.getElementById("form-descricao").value.trim();
-      if (!nome)       { alert("Informe o nome do local."); return; }
-      if (!coordenada) { alert("Clique no mapa para marcar a localização."); return; }
-      addMarker(coordenada.lat, coordenada.lng, nome, descricao || "Adicionado pelo usuário", tipo, status);
-      atualizarContador();
-      cancelarFormulario();
-    }
+function toggleLayer(tipo){
+  const btn=document.getElementById(`btn-${tipo}`);
+  if(layerAtivo[tipo]){map.removeLayer(layers[tipo]);layerAtivo[tipo]=false;if(btn){btn.classList.remove("ativo");btn.classList.add("inativo");}}
+  else{map.addLayer(layers[tipo]);layerAtivo[tipo]=true;if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}}
+  atualizarContador();
+}
 
-    atualizarContador();
-  </script>
+function showAll(){
+  Object.keys(layers).forEach(tipo=>{map.addLayer(layers[tipo]);layerAtivo[tipo]=true;const btn=document.getElementById(`btn-${tipo}`);if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}});
+  atualizarContador();
+}
+
+function mostrarToast(msg,cor="#3fb950"){
+  const t=document.getElementById("toast");t.textContent=msg;t.style.borderColor=cor;t.style.display="block";
+  setTimeout(()=>{t.style.display="none";},3000);
+}
+
+function localizarUsuario(){
+  if(!navigator.geolocation){mostrarToast("⚠️ Navegador não suporta geolocalização.","#d29922");return;}
+  mostrarToast("🔍 Buscando localização...","#2f81f7");
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      const{latitude,longitude}=pos.coords;
+      map.setView([latitude,longitude],16);
+      L.circleMarker([latitude,longitude],{radius:10,color:"#2f81f7",fillColor:"#2f81f7",fillOpacity:0.4,weight:2}).addTo(map)
+        .bindPopup(`<div style="padding:10px 14px;font-family:'DM Sans',sans-serif;color:#e6edf3"><strong>📍 Você está aqui</strong></div>`).openPopup();
+      mostrarToast("✅ Localização encontrada!");
+    },
+    ()=>{mostrarToast("⚠️ Não foi possível obter localização.","#d29922");}
+  );
+}
+
+let coordenada=null,modoAdicionar=false;
+
+function toggleFormulario(){
+  modoAdicionar=!modoAdicionar;
+  const painel=document.getElementById("ms-painel-form");
+  const btn=document.getElementById("ms-btn-reportar");
+  if(modoAdicionar){painel.style.display="block";btn.innerHTML="<span>✕</span> Cancelar";btn.classList.add("ativo");map.getContainer().style.cursor="crosshair";}
+  else{cancelarFormulario();}
+}
+
+function cancelarFormulario(){
+  modoAdicionar=false;coordenada=null;
+  document.getElementById("ms-painel-form").style.display="none";
+  document.getElementById("ms-btn-reportar").innerHTML="<span>📍</span> Adicionar Local";
+  document.getElementById("ms-btn-reportar").classList.remove("ativo");
+  document.getElementById("form-nome").value="";
+  document.getElementById("form-descricao").value="";
+  document.getElementById("ms-btn-confirmar").disabled=true;
+  ["form-nome","form-descricao"].forEach(id=>document.getElementById(id).classList.remove("invalido"));
+  ["erro-nome","erro-descricao","erro-coordenada"].forEach(id=>document.getElementById(id).style.display="none");
+  const aviso=document.getElementById("ms-aviso-clique");
+  aviso.textContent="🖱️ Clique no mapa para marcar";aviso.className="";
+  map.getContainer().style.cursor="";
+}
+
+map.on("click",function(e){
+  if(!modoAdicionar)return;
+  coordenada=e.latlng;
+  const aviso=document.getElementById("ms-aviso-clique");
+  aviso.textContent=`✅ ${coordenada.lat.toFixed(4)}, ${coordenada.lng.toFixed(4)}`;
+  aviso.className="marcado";
+  document.getElementById("ms-btn-confirmar").disabled=false;
+  document.getElementById("erro-coordenada").style.display="none";
+});
+
+function confirmarLocal(){
+  const nomeEl=document.getElementById("form-nome");
+  const descEl=document.getElementById("form-descricao");
+  const tipo=document.getElementById("form-tipo").value;
+  const status=document.getElementById("form-status").value;
+  const nome=nomeEl.value.trim();
+  const descricao=descEl.value.trim();
+  let valido=true;
+  if(!nome){nomeEl.classList.add("invalido");document.getElementById("erro-nome").style.display="block";valido=false;}
+  else{nomeEl.classList.remove("invalido");document.getElementById("erro-nome").style.display="none";}
+  if(!descricao){descEl.classList.add("invalido");document.getElementById("erro-descricao").style.display="block";valido=false;}
+  else{descEl.classList.remove("invalido");document.getElementById("erro-descricao").style.display="none";}
+  if(!coordenada){document.getElementById("erro-coordenada").style.display="block";valido=false;}
+  else{document.getElementById("erro-coordenada").style.display="none";}
+  if(!valido)return;
+  addMarker(coordenada.lat,coordenada.lng,nome,descricao,tipo,status);
+  atualizarContador();cancelarFormulario();mostrarToast("✅ Local adicionado!");
+}
+
+atualizarContador();
+</script>
 </body>
 </html>
