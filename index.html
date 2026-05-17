@@ -155,6 +155,22 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;align-i
 
 /* TOAST */
 #toast{display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green);color:var(--text);padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.5);white-space:nowrap;}
+
+/* SIDEBAR TOGGLE */
+.map-sidebar{transition:transform 0.25s ease,opacity 0.25s ease;}
+.map-sidebar.fechada{transform:translateX(-110%);opacity:0;pointer-events:none;}
+#ms-toggle-btn{
+  position:absolute;top:16px;left:16px;z-index:1001;
+  width:38px;height:38px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:18px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:all 0.15s;
+}
+#ms-toggle-btn:hover{background:var(--accent);border-color:var(--accent);}
+#ms-toggle-btn.visivel{display:flex;}
+.ms-filter-btn.todos.ativo-todos{background:rgba(47,129,247,0.15);border-color:var(--accent);color:var(--accent);}
+.ms-filter-btn.todos.inativo-todos{opacity:0.4;}
 </style>
 </head>
 <body>
@@ -259,16 +275,20 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;align-i
   </div>
   <div class="map-wrapper">
     <div id="map"></div>
-    <div class="map-sidebar">
+    <button id="ms-toggle-btn" title="Abrir painel">♿</button>
+    <div class="map-sidebar" id="map-sidebar">
       <div class="map-sidebar-header">
-        <div class="ms-logo-row">
-          <div class="ms-logo-icon">♿</div>
-          <div>
-            <div class="ms-logo-title">AcessívelMaps</div>
-            <div class="ms-logo-sub">Mineiros — Goiás</div>
+        <div class="ms-logo-row" style="justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="ms-logo-icon">♿</div>
+            <div>
+              <div class="ms-logo-title">AcessívelMaps</div>
+              <div class="ms-logo-sub">Mineiros — Goiás</div>
+            </div>
           </div>
+          <button onclick="fecharSidebar()" title="Fechar" style="background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">✕</button>
         </div>
-        <p class="ms-desc">Mapa colaborativo de acessibilidade urbana.</p>
+        <p class="ms-desc" style="margin-top:6px;">Mapa colaborativo de acessibilidade urbana.</p>
       </div>
       <div class="ms-section">
         <div class="ms-label">Filtrar por recurso</div>
@@ -276,7 +296,7 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;align-i
           <button class="ms-filter-btn ativo" id="btn-rampa" onclick="toggleLayer('rampa')">♿ Rampa</button>
           <button class="ms-filter-btn ativo" id="btn-elevador" onclick="toggleLayer('elevador')">🛗 Elevador</button>
           <button class="ms-filter-btn ativo" id="btn-banheiro" onclick="toggleLayer('banheiro')">🚻 Banheiro</button>
-          <button class="ms-filter-btn todos" onclick="showAll()">🗺️ Todos</button>
+          <button class="ms-filter-btn todos" id="btn-todos" onclick="toggleTodos()">🗺️ Todos</button>
         </div>
       </div>
       <div id="ms-contador">Carregando...</div>
@@ -368,10 +388,20 @@ footer{padding:40px 24px;border-top:1px solid var(--border);display:flex;align-i
 </footer>
 
 <script>
-const map = L.map('map').setView([-17.5689,-52.5508],14);
+const map = L.map('map',{zoomControl:false,scrollWheelZoom:false}).setView([-17.5689,-52.5508],14);
+map.on('click',()=>map.scrollWheelZoom.enable());
+map.on('mouseout',()=>map.scrollWheelZoom.disable());
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
 
-let layers={},layerAtivo={};
+// ✅ CORREÇÃO: pré-inicializa todos os layer groups antes de adicionar marcadores
+const TIPOS = ['rampa','elevador','banheiro'];
+const layers = {};
+const layerAtivo = {};
+
+TIPOS.forEach(tipo => {
+  layers[tipo] = L.layerGroup().addTo(map);
+  layerAtivo[tipo] = true;
+});
 
 function criarIcone(status){
   const cores={acessivel:{bg:"#16a34a",emoji:"♿"},parcial:{bg:"#d97706",emoji:"⚠️"},inacessivel:{bg:"#dc2626",emoji:"✕"}};
@@ -386,8 +416,11 @@ function criarPopup(nome,descricao,status){
 }
 
 function addMarker(lat,lon,nome,descricao,tipo,status="parcial"){
+  if(!layers[tipo]){
+    layers[tipo]=L.layerGroup().addTo(map);
+    layerAtivo[tipo]=true;
+  }
   const marker=L.marker([lat,lon],{icon:criarIcone(status)}).bindPopup(criarPopup(nome,descricao,status));
-  if(!layers[tipo]){layers[tipo]=L.layerGroup().addTo(map);layerAtivo[tipo]=true;}
   layers[tipo].addLayer(marker);
 }
 
@@ -403,20 +436,83 @@ addMarker(-17.560028321231453,-52.56483728887501,"Fórum de Mineiros","Órgão p
 
 function atualizarContador(){
   let total=0;
-  Object.entries(layers).forEach(([tipo,layer])=>{if(layerAtivo[tipo])total+=layer.getLayers().length;});
+  TIPOS.forEach(tipo=>{
+    if(layerAtivo[tipo]) total+=layers[tipo].getLayers().length;
+  });
   document.getElementById("ms-contador").textContent=`📍 ${total} ponto(s) visível(is)`;
 }
 
 function toggleLayer(tipo){
   const btn=document.getElementById(`btn-${tipo}`);
-  if(layerAtivo[tipo]){map.removeLayer(layers[tipo]);layerAtivo[tipo]=false;if(btn){btn.classList.remove("ativo");btn.classList.add("inativo");}}
-  else{map.addLayer(layers[tipo]);layerAtivo[tipo]=true;if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}}
+  if(layerAtivo[tipo]){
+    map.removeLayer(layers[tipo]);
+    layerAtivo[tipo]=false;
+    if(btn){btn.classList.remove("ativo");btn.classList.add("inativo");}
+  } else {
+    map.addLayer(layers[tipo]);
+    layerAtivo[tipo]=true;
+    if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}
+  }
+  atualizarBtnTodos();
   atualizarContador();
 }
 
-function showAll(){
-  Object.keys(layers).forEach(tipo=>{map.addLayer(layers[tipo]);layerAtivo[tipo]=true;const btn=document.getElementById(`btn-${tipo}`);if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}});
+function toggleTodos(){
+  const todosAtivos = TIPOS.every(t => layerAtivo[t]);
+  if(todosAtivos){
+    // desativar todos
+    TIPOS.forEach(tipo=>{
+      map.removeLayer(layers[tipo]);
+      layerAtivo[tipo]=false;
+      const btn=document.getElementById(`btn-${tipo}`);
+      if(btn){btn.classList.remove("ativo");btn.classList.add("inativo");}
+    });
+  } else {
+    // ativar todos
+    TIPOS.forEach(tipo=>{
+      map.addLayer(layers[tipo]);
+      layerAtivo[tipo]=true;
+      const btn=document.getElementById(`btn-${tipo}`);
+      if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}
+    });
+  }
+  atualizarBtnTodos();
   atualizarContador();
+}
+
+function atualizarBtnTodos(){
+  const btn=document.getElementById("btn-todos");
+  if(!btn)return;
+  const todosAtivos=TIPOS.every(t=>layerAtivo[t]);
+  const nenhumAtivo=TIPOS.every(t=>!layerAtivo[t]);
+  btn.classList.remove("ativo-todos","inativo-todos");
+  if(todosAtivos) btn.classList.add("ativo-todos");
+  else if(nenhumAtivo) btn.classList.add("inativo-todos");
+}
+
+function showAll(){
+  TIPOS.forEach(tipo=>{
+    map.addLayer(layers[tipo]);
+    layerAtivo[tipo]=true;
+    const btn=document.getElementById(`btn-${tipo}`);
+    if(btn){btn.classList.remove("inativo");btn.classList.add("ativo");}
+  });
+  atualizarBtnTodos();
+  atualizarContador();
+}
+
+function fecharSidebar(){
+  const sidebar=document.getElementById("map-sidebar");
+  const toggleBtn=document.getElementById("ms-toggle-btn");
+  sidebar.classList.add("fechada");
+  toggleBtn.classList.add("visivel");
+}
+
+function abrirSidebar(){
+  const sidebar=document.getElementById("map-sidebar");
+  const toggleBtn=document.getElementById("ms-toggle-btn");
+  sidebar.classList.remove("fechada");
+  toggleBtn.classList.remove("visivel");
 }
 
 function mostrarToast(msg,cor="#3fb950"){
@@ -494,6 +590,8 @@ function confirmarLocal(){
 }
 
 atualizarContador();
+atualizarBtnTodos();
+document.getElementById("ms-toggle-btn").addEventListener("click", abrirSidebar);
 </script>
 </body>
 </html>
